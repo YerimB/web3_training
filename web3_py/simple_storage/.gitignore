@@ -1,0 +1,5 @@
+# Environment variables
+.env
+
+# Compiled contracts
+compiled_code.json
