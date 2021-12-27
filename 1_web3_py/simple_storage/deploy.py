@@ -1,4 +1,4 @@
-#!/usr/bin/python3
+#!./../web3_venv/bin/python3
 
 import os
 import json
