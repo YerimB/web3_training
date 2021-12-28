@@ -29,6 +29,11 @@ PUBLIC_KEY_ADDR1 = os.getenv("PUBLIC_KEY_ADDR1")
 if SOLC_VERSION not in get_installed_solc_versions():
     install_solc(SOLC_VERSION)
 
+
+######################
+# COMPILING SOLIDITY #
+######################
+
 print("Compiling solidity...", end="", flush=True)
 with open("./SimpleStorage.sol", "r") as file:
     simple_storage_file = file.read()
@@ -48,6 +53,11 @@ compiled_sol = compile_standard(
 )
 print("Done.")
 
+
+#################################################
+# SAVE COMPILED SOLIDITY AND GET BYTECODE & ABI #
+#################################################
+
 # Write compiled solidity file as JSON
 with open("compiled_code.json", "w") as file:
     json.dump(compiled_sol, file)
@@ -60,10 +70,20 @@ bytecode = compiled_sol["contracts"]["SimpleStorage.sol"]["SimpleStorage"]["evm"
 # Get the abi
 abi = compiled_sol["contracts"]["SimpleStorage.sol"]["SimpleStorage"]["abi"]
 
+
+#########################
+# CONNECT TO BLOCKCHAIN #
+#########################
+
 # Connecting to ganache
 w3 = Web3(Web3.HTTPProvider(NETWORK_URL))
 # Needed to interacting with rinkeby testnet
 w3.middleware_onion.inject(geth_poa_middleware, layer=0)
+
+
+#####################################
+# CREATE CONTRACT ON THE BLOCKCHAIN #
+#####################################
 
 print("Creating contract on network...", end="", flush=True)
 # Create the contract instance ('Contract' type, see : seb3._utils.datatypes.Contract)
@@ -88,6 +108,11 @@ txn_receipt = w3.eth.wait_for_transaction_receipt(txn_hash)
 # Update nonce after transaction end
 nonce += 1
 print("Done.")
+
+
+##################################
+# INTERACT WITH CREATED CONTRACT #
+##################################
 
 # Accessing the deployed contract
 simple_storage = w3.eth.contract(address=txn_receipt.contractAddress, abi=abi)
