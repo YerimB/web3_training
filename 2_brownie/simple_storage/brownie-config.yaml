@@ -1,0 +1,10 @@
+# Telling brownie to grap the env vars stored in the '.env' file
+dotenv: .env
+
+dependencies:
+  # - <organisation/repo>@<version>
+  - smartcontractkit/chainlink-brownie-contracts@0.3.0
+compiler:
+  solc:
+    remappings:
+      - '@chainlink=smartcontractkit/chainlink-brownie-contracts@0.3.0'
