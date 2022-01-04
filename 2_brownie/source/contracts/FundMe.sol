@@ -50,7 +50,7 @@ contract FundMe {
     function fund() public payable {
         // Comparison is made in GWEI unit.
         require(
-            (msg.value / 10**9) >= this._getEntranceFee(),
+            msg.value >= this._getEntranceFee(),
             "Try spending more $ETH !"
         );
 
@@ -104,14 +104,14 @@ contract FundMe {
         m_PriceFeed = AggregatorV3Interface(_address);
     }
 
-    // Returns the minimum USD amount in GWEI (or ETH with a precision of 9)
+    // Returns the minimum USD amount in WEI (or ETH with a precision of 18)
     // to create a successful fund transaction.
     function _getEntranceFee() public view returns (uint256) {
         uint256 ethPrice = this._getPrice();
         // uint256 ethPricePrecision = 10**8;
-        // uint256 gweiPrecision = 10**9;
-        // uint256 totalPrecision = ethPricePrecision * gweiPrecision;
-        uint256 totalPrecision = 10**17;
+        // uint256 weiPrecision = 10**18;
+        // uint256 totalPrecision = ethPricePrecision * weiPrecision;
+        uint256 totalPrecision = 10**26;
 
         return ((m_entranceFeeUSD * totalPrecision) / ethPrice);
     }

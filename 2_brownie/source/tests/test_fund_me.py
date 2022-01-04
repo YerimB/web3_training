@@ -1,12 +1,12 @@
 import pytest
 
-from brownie import network, accounts, exceptions
+from brownie import network, exceptions, accounts
 from scripts.useful.common import LOCAL_BLOCKCHAIN_ENVIRONMENTS, get_account
 from scripts.fund_me.deploy import deploy_fund_me
 
 
-def get_wei_entrance_fee(contract, offset=100):
-    return (contract._getEntranceFee() * 1e9) + offset
+def get_wei_entrance_fee(contract, offset : int = 100):
+    return contract._getEntranceFee() + offset
 
 
 def test_can_fund_and_withdraw():
@@ -144,5 +144,5 @@ def test_setting_entrance_fee():
 
     # Core 4 : From bad account (Expecting VMError)
     bad_actor = accounts.add()
-    with pytest.raises(exceptions.VirtualMachineError):
+    with pytest.raises((exceptions.VirtualMachineError, ValueError)):
         contract._setEntranceFee(50, {'from': bad_actor})
