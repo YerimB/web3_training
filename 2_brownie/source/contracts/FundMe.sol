@@ -9,8 +9,8 @@ contract FundMe {
 
     struct Funder {
         bool isFunder;
-        uint256 index;
         uint256 amountFunded;
+        uint256 index;
     }
 
     // VARIABLES
@@ -59,8 +59,8 @@ contract FundMe {
             m_Funders.push(msg.sender);
             m_AddressToFunderData[msg.sender] = Funder({
                 isFunder: true,
-                index: m_Funders.length - 1,
-                amountFunded: 0
+                amountFunded: 0,
+                index: m_Funders.length - 1
             });
         }
         m_AddressToFunderData[msg.sender].amountFunded += msg.value;
@@ -116,10 +116,6 @@ contract FundMe {
         return ((m_entranceFeeUSD * totalPrecision) / ethPrice);
     }
 
-    function _getVersion() public view returns (uint256) {
-        return m_PriceFeed.version();
-    }
-
     // Gets ETH price in USD with a precision of 8
     function _getPrice() public view returns (uint256) {
         (, int256 answer, , , ) = m_PriceFeed.latestRoundData();
@@ -147,5 +143,9 @@ contract FundMe {
 
     function _isFunder(address _address) public view returns (bool) {
         return m_AddressToFunderData[_address].isFunder;
+    }
+
+    function _getVersion() public view returns (uint256) {
+        return m_PriceFeed.version();
     }
 }
