@@ -1,11 +1,19 @@
 from brownie import Contract, network, accounts, config
 from brownie import MockV3Aggregator, VRFCoordinatorMock, LinkToken
 from brownie.network.account import Account
+from brownie.network.transaction import TransactionReceipt
 
 from scripts.useful.mocks import deploy_mock
 
 FORKED_LOCAL_BLOCKCHAIN_ENVIRONMENTS = ["mainnet-fork", "mainnet-fork-dev"]
 LOCAL_BLOCKCHAIN_ENVIRONMENTS = ["development", "ganache-local-1"]
+
+
+def wait_for_tx_confs(txid: str, conf_nb: int = 1):
+    tx_receipt = TransactionReceipt(txid)
+    if tx_receipt.confirmations == conf_nb:
+        tx_receipt.wait(conf_nb)
+    return tx_receipt
 
 
 def get_account(index: int | None = None, id: str | None = None):
@@ -15,7 +23,6 @@ def get_account(index: int | None = None, id: str | None = None):
         return accounts[index]
     elif id:
         return accounts.load(id)
-    print(active_network)
     if (
         active_network in LOCAL_BLOCKCHAIN_ENVIRONMENTS
         or active_network in FORKED_LOCAL_BLOCKCHAIN_ENVIRONMENTS

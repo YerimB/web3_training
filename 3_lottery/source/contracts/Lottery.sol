@@ -9,10 +9,9 @@ import "@openzeppelin/contracts/access/Ownable.sol";
 contract Lottery is VRFConsumerBase, Ownable {
     // TYPES
     enum LotteryState {
-        OPEN,
         CLOSED,
-        CALCULATING_WINNER,
-        FINISHED
+        OPENED,
+        CALCULATING_WINNER
     }
 
     // VARIABLES
@@ -29,6 +28,9 @@ contract Lottery is VRFConsumerBase, Ownable {
 
     mapping(address => bool) public m_PlayerToHasEntered;
     mapping(address => uint256) public m_PlayerToUnclaimedMoney;
+
+    // EVENTS
+    event RandomnessRequested(bytes32 requestId);
 
     // METHODS
     constructor(
@@ -49,7 +51,7 @@ contract Lottery is VRFConsumerBase, Ownable {
     function enter() public payable {
         // Check if the lottery is opened.
         require(
-            m_LotteryState == LotteryState.OPEN,
+            m_LotteryState == LotteryState.OPENED,
             "Lottery has not started yet."
         );
 
@@ -64,7 +66,7 @@ contract Lottery is VRFConsumerBase, Ownable {
         );
         // Checks if the amount sent by msg.sender is superior
         // or equal to the entrance fee
-        require(msg.value >= entrance_fee, "Invalid amount of $ETH sent.");
+        require(msg.value >= entrance_fee, "Insufficient amount of $ETH sent.");
 
         // Make player enter the lottery
         m_Players.push(payable(msg.sender));
@@ -91,14 +93,11 @@ contract Lottery is VRFConsumerBase, Ownable {
     function startLottery() public onlyOwner {
         // Checks if lottery is not currently opened.
         require(
-            m_LotteryState == LotteryState.CLOSED ||
-                m_LotteryState == LotteryState.FINISHED,
+            m_LotteryState == LotteryState.CLOSED,
             "Lottery already in progress."
         );
-        // Resets lottery if needed.
-        if (m_LotteryState == LotteryState.FINISHED) _resetLottery();
-        // Set lottery state to OPEN.
-        m_LotteryState = LotteryState.OPEN;
+        // Set lottery state to OPENED.
+        m_LotteryState = LotteryState.OPENED;
     }
 
     function endLottery() public onlyOwner {
@@ -120,6 +119,8 @@ contract Lottery is VRFConsumerBase, Ownable {
         } // DO NOT USE !
         // Request a random number.
         m_RandomRequestId = requestRandomness(m_Keyhash, m_Fee);
+
+        emit RandomnessRequested(m_RandomRequestId);
 
         /*
          * Second part of the lottery gambling and ending takes place
@@ -158,7 +159,7 @@ contract Lottery is VRFConsumerBase, Ownable {
 
         // Sends funds to winner
         _send(address(this).balance, m_Winner);
-        m_LotteryState = LotteryState.CLOSED;
+        _resetLottery();
     }
 
     // Overrides the fulfillRandomness function from VRFConsumerBase class.
