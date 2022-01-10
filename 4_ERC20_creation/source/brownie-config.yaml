@@ -1,0 +1,25 @@
+# Telling brownie to grap the env vars stored in the '.env' file
+dotenv: .env
+
+dependencies:
+  # - <organisation/repo>@<version>
+  - OpenZeppelin/openzeppelin-contracts@4.4.1
+compiler:
+  solc:
+    remappings:
+      - '@openzeppelin=OpenZeppelin/openzeppelin-contracts@4.4.1'
+
+networks:
+  default: development
+  rinkeby:
+    eth_usd_price_feed: '0x8A753747A1Fa494EC906cE90E9f37563A8AF630e'
+    verify: True
+  ftm-test:
+    verify: False # Not able to verify on Fantom Opera testnet
+  mainnet-fork-dev:
+    eth_usd_price_feed: '0x5f4eC3Df9cbd43714FE2740f5E3616155c5b8419'
+    verify: False
+  development:
+    verify: False
+  ganache-local-1:
+    verify: False
