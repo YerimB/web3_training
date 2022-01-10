@@ -96,6 +96,8 @@ def fund_with_link(
         link_token = get_contract("link_token")
 
     # Fund
+    balance = link_token.balanceOf(from_account)
+    print(f"Balance : {balance}")
     tx = link_token.transfer(contract_address, amount, {"from": from_account})
     if wait_tx == True and tx.confirmations == 0:
         print(

@@ -6,6 +6,7 @@ import "@chainlink/contracts/src/v0.8/interfaces/AggregatorV3Interface.sol";
 import "@chainlink/contracts/src/v0.8/VRFConsumerBase.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
 
+
 contract Lottery is VRFConsumerBase, Ownable {
     // TYPES
     enum LotteryState {
@@ -20,6 +21,7 @@ contract Lottery is VRFConsumerBase, Ownable {
     bytes32 public m_Keyhash;
     bytes32 public m_RandomRequestId;
     uint256 public m_PreviousRandomness;
+    bool public m_GambleDone;
 
     LotteryState public m_LotteryState;
     address payable[] public m_Players;
@@ -31,6 +33,7 @@ contract Lottery is VRFConsumerBase, Ownable {
 
     // EVENTS
     event RandomnessRequested(bytes32 requestId);
+    event RandomnessReceived(bytes32 requestId, uint256 randomness);
 
     // METHODS
     constructor(
@@ -46,6 +49,7 @@ contract Lottery is VRFConsumerBase, Ownable {
         m_LotteryState = LotteryState.CLOSED;
         m_Fee = _fee;
         m_Keyhash = _keyhash;
+        m_GambleDone = false;
     }
 
     function enter() public payable {
@@ -98,6 +102,7 @@ contract Lottery is VRFConsumerBase, Ownable {
         );
         // Set lottery state to OPENED.
         m_LotteryState = LotteryState.OPENED;
+        m_GambleDone = false;
     }
 
     function endLottery() public onlyOwner {
@@ -179,6 +184,8 @@ contract Lottery is VRFConsumerBase, Ownable {
             _randomness != 0 && _randomness != m_PreviousRandomness,
             "random-not-found"
         );
+        emit RandomnessReceived(_requestId, _randomness);
+        m_GambleDone = true;
 
         _sendPrizeToWinner(_randomness % m_Players.length);
 

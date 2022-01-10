@@ -12,7 +12,6 @@ charset-normalizer==2.0.6
 click==8.0.1
 colorama==0.4.4
 Cython==0.29.26
-cytools==1.0.0
 cytoolz==0.11.0
 dataclassy==0.10.4
 eip712==0.1.0

@@ -51,13 +51,13 @@ def test_can_pick_winner_correctly():
             {"from": get_account(index=2), "value": lottery_entrance_fee}
         ).txid
     )
-    fund_with_link(contract, from_account=owner)
 
     # Core
-    # --- End lottery
-    tx = wait_for_tx_confs(contract.endLottery({"from": owner}).txid)
+    fund_with_link(contract, from_account=owner)
     owner_initial_balance = owner.balance()
     lottery_balance_before_gambling = contract.balance()
+    # --- End lottery
+    tx = wait_for_tx_confs(contract.endLottery({"from": owner}).txid)
     # --- Simulating callback
     requestId = tx.events["RandomnessRequested"]["requestId"]
     vrf_coordinator = get_contract("vrf_coordinator")
