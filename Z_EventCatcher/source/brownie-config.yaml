@@ -1,0 +1,9 @@
+# Telling brownie to grap the env vars stored in the '.env' file
+dotenv: .env
+
+wallets:
+  from_key: ${PRIVATE_KEY}
+
+networks:
+  kovan:
+    verify: True

@@ -6,13 +6,13 @@ import "@chainlink/contracts/src/v0.8/interfaces/AggregatorV3Interface.sol";
 import "@chainlink/contracts/src/v0.8/VRFConsumerBase.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
 
-
 contract Lottery is VRFConsumerBase, Ownable {
     // TYPES
     enum LotteryState {
         CLOSED,
         OPENED,
-        CALCULATING_WINNER
+        CALCULATING_WINNER,
+        ENTRIES_CLOSED
     }
 
     // VARIABLES
@@ -21,7 +21,7 @@ contract Lottery is VRFConsumerBase, Ownable {
     bytes32 public m_Keyhash;
     bytes32 public m_RandomRequestId;
     uint256 public m_PreviousRandomness;
-    bool public m_GambleDone;
+    bool public m_GambleDone; // For testing purpose only
 
     LotteryState public m_LotteryState;
     address payable[] public m_Players;
@@ -34,6 +34,8 @@ contract Lottery is VRFConsumerBase, Ownable {
     // EVENTS
     event RandomnessRequested(bytes32 requestId);
     event RandomnessReceived(bytes32 requestId, uint256 randomness);
+    event LotteryStarted(uint256 usdEntryFee);
+    event LotteryReset();
 
     // METHODS
     constructor(
@@ -44,19 +46,65 @@ contract Lottery is VRFConsumerBase, Ownable {
         uint256 _fee,
         bytes32 _keyhash
     ) VRFConsumerBase(_vrfCoordinator, _linkToken) {
+        // Set lottery entry fee.
         m_UsdEntryFee = _usdEntryFee * (10**18);
+        // Setup price feed.
         m_EthUsdPriceFeed = AggregatorV3Interface(_priceFeedAddress);
+        // Set lottery default state to CLOSED.
         m_LotteryState = LotteryState.CLOSED;
+        // Set VRFConsumerBase variables
         m_Fee = _fee;
         m_Keyhash = _keyhash;
         m_GambleDone = false;
     }
 
+    // Returns the lottery entrance fee in WEI
+    function getEntranceFee() public view returns (uint256) {
+        // The $ETH price in USD (precision 8)
+        uint256 ethPrice = this._getEthPrice();
+        // The precision by which the entry fee is devided
+        uint256 precisionKeeper = 10**8;
+
+        return (m_UsdEntryFee * precisionKeeper) / ethPrice;
+    }
+
+    /* START */
+
+    /**
+    This function is called just before the startLottery function
+     */
+    function _preStartLottery() internal virtual {}
+
+    function startLottery() public virtual onlyOwner {
+        // Checks if lottery is not currently opened.
+        require(
+            m_LotteryState == LotteryState.CLOSED,
+            "Invalid lottery state : Lottery already in progress."
+        );
+        // Set lottery state to OPENED.
+        m_LotteryState = LotteryState.OPENED;
+        m_GambleDone = false;
+        _postStartLottery();
+    }
+
+    /**
+    This function is called right after the startLottery function
+     */
+    function _postStartLottery() internal virtual {
+        emit LotteryStarted(m_UsdEntryFee);
+    }
+
+    /* ENTER */
+
+    function _preEnter() internal virtual {}
+
     function enter() public payable {
+        _preEnter();
+
         // Check if the lottery is opened.
         require(
             m_LotteryState == LotteryState.OPENED,
-            "Lottery has not started yet."
+            "Unable to enter lottery : Invalid lottery state."
         );
 
         // Get entrance fee in wei.
@@ -82,30 +130,22 @@ contract Lottery is VRFConsumerBase, Ownable {
             bool success = _send(leftovers, msg.sender);
             if (!success) m_PlayerToUnclaimedMoney[msg.sender] += leftovers;
         }
+
+        _postEnter();
     }
 
-    // Returns the lottery entrance fee in WEI
-    function getEntranceFee() public view returns (uint256) {
-        // The $ETH price in USD (precision 8)
-        uint256 ethPrice = this._getEthPrice();
-        // The precision by which the entrey fee is devided
-        uint256 precisionKeeper = 10**8;
+    function _postEnter() internal virtual {}
 
-        return (m_UsdEntryFee * precisionKeeper) / ethPrice;
-    }
+    /* END LOTTERY */
 
-    function startLottery() public onlyOwner {
-        // Checks if lottery is not currently opened.
-        require(
-            m_LotteryState == LotteryState.CLOSED,
-            "Lottery already in progress."
-        );
-        // Set lottery state to OPENED.
-        m_LotteryState = LotteryState.OPENED;
-        m_GambleDone = false;
-    }
+    /**
+     * This function is called before endLottery()
+     */
+    function _preEndLottery() internal virtual {}
 
     function endLottery() public onlyOwner {
+        _preEndLottery();
+
         // Change lottery state to CALCULATING_WINNER
         m_LotteryState = LotteryState.CALCULATING_WINNER;
 
@@ -132,15 +172,25 @@ contract Lottery is VRFConsumerBase, Ownable {
          * in the callback function for requestRandomness().
          * @see fulfillRandomness() function.
          */
+
+        _postEndLottery();
     }
 
+    /**
+     * This function is called after endLottery()
+     */
+    function _postEndLottery() internal virtual {}
+
+    /**
+     * This function can be called to be sent unclaimed funds if there is.
+     */
     function claim() public {
+        // Checks for the unclaimed amount to be > 0.
+        require(m_PlayerToUnclaimedMoney[msg.sender] > 0, "Nothing to claim.");
         // Retrieves unclaimed amount of msg.sender
         uint256 unclaimedMoney = m_PlayerToUnclaimedMoney[msg.sender];
         // Unmaps msg.sender from m_PlayerToUnclaimedMoney.
         delete m_PlayerToUnclaimedMoney[msg.sender];
-        // Checks for the unclaimed amount to be > 0.
-        require(unclaimedMoney > 0, "Nothing to claim.");
         // Tries sending the unclaimed amount to msg.sender.
         bool success = _send(unclaimedMoney, msg.sender);
 
@@ -194,13 +244,14 @@ contract Lottery is VRFConsumerBase, Ownable {
     }
 
     // Resets lottery.
-    function _resetLottery() internal {
+    function _resetLottery() internal virtual {
         // Reset players related contract variables
         for (uint256 i = 0; i < m_Players.length; ++i)
             delete m_PlayerToHasEntered[m_Players[i]];
         delete m_Players;
         // Set lottery state to closed.
         m_LotteryState = LotteryState.CLOSED;
+        emit LotteryReset();
     }
 
     // Sends '_amount' wei to the specified '_address'
