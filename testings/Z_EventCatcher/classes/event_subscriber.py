@@ -1,16 +1,16 @@
+# SPDX-License-Identifier: MIT
+
 # Typing
 from typing import Callable
 
+# Web3.py & Brownie
+# --- Web3.py
 from web3._utils import datatypes as w3_datatypes
-from brownie import web3 as w3
-from brownie.network import alert
-
-# Web3 & Brownie types
-# --- Web3
-from web3.datastructures import AttributeDict
 from web3.contract import Contract as w3_Contract
 
 # --- Brownie
+from brownie import web3 as w3
+from brownie.network import alert
 from brownie.network.contract import Contract, ProjectContract
 
 
@@ -91,15 +91,13 @@ class EventSubscriber:
             type brownie.network.contract.Contract or of type brownie.network.contract.ProjectContract
         """
         if type(contract) not in [Contract, ProjectContract]:
-            raise TypeError(
-                "Given argument \'contract\' invalid type."
-            )
+            raise TypeError("Given argument 'contract' invalid type.")
         self._brownie_contract = contract
         self._w3_contract = _brownie_contract_to_web3_contract(self._brownie_contract)
         self._event_name = event_name
         self._callback = callback
         self._from_block = kwargs.get("from_block", w3.eth.block_number)
-        if kwargs.get("auto_enable", True):
+        if kwargs.get("auto_enable", False):
             self.enable()
 
     def enable(self, delay: int = 2, repeat: bool = False):
@@ -126,9 +124,7 @@ class EventSubscriber:
 
     def __setup_event_callback(self, _delay: int, _repeat: bool):
         # Get event (PropertyCheckingFactory) from event name
-        self.event_watched = self.__get_w3_event_from_name(
-            self._event_name
-        )
+        self.event_watched = self.__get_w3_event_from_name(self._event_name)
         # Get event generator
         self._gen_event_getter = _get_next_event(
             self.event_watched, from_block=self._from_block
@@ -163,4 +159,6 @@ class EventSubscriber:
             raise ValueError("_property_checking_factory setter : invalid value type.")
         self._property_checking_factory = value
 
-    event_watched = property(fget=_get_prop_check_fact, fset=_set_prop_check_fact)  # <-> Event
+    event_watched = property(
+        fget=_get_prop_check_fact, fset=_set_prop_check_fact
+    )  # <-> Event

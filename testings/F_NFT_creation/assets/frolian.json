@@ -1,0 +1,19 @@
+{
+    "name": "Frolian",
+    "description": "The great ninja teraboss of the blockchain, can pump everything in the blink of an eye.",
+    "image": "https://ipfs.io/ipfs/QmTeGBecVPJnvqeMkxSSu6A6j3WWpwHb7UBefGfvgmqDsN?filename=frolian.png",
+    "attributes": [
+        {
+            "trait_type": "Pump power",
+            "value": 122
+        },
+        {
+            "trait_type": "C# .NET",
+            "value": 214
+        },
+        {
+            "trait_type": "Find & fix bugs in program",
+            "value": 173
+        }
+    ]
+}
