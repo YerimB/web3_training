@@ -1,5 +1,7 @@
 # SPDX-License-Identifier: MIT
 
+import time
+
 # Typing
 from typing import Callable
 
@@ -100,33 +102,54 @@ class EventSubscriber:
         if kwargs.get("auto_enable", False):
             self.enable()
 
-    def enable(self, delay: int = 2, repeat: bool = False):
+    def enable(self, delay: float = 2.0, repeat: bool = False):
         """Enables the established callback on the established event.
 
         Args:
-            delay (int, optional): @dev see : https://eth-brownie.readthedocs.io/en/stable/api-network.html#brownie.network.alert.Alert. Defaults to 2.
+            delay (float, optional): @dev see : https://eth-brownie.readthedocs.io/en/stable/api-network.html#brownie.network.alert.Alert. Defaults to 2.
             repeat (bool, optional): @dev see : https://eth-brownie.readthedocs.io/en/stable/api-network.html#brownie.network.alert.Alert. Defaults to False.
+
+        Returns:
+            self [EventSubscriber]: Class current instance.
         """
         self.__setup_event_callback(delay, repeat)
+        return self
 
-    def disable(self, wait: bool = True):
+    def disable(self, wait: bool = False):
         """Disables the established callback on the established event.
 
         Args:
-            wait (bool, optional): @dev see : https://eth-brownie.readthedocs.io/en/stable/api-network.html#Alert.stop. Defaults to True.
+            wait (bool, optional): @dev see : https://eth-brownie.readthedocs.io/en/stable/api-network.html#Alert.stop. Defaults to False.
         """
         if self._alert == None or self._alert.is_alive() == False:
             print("Warning : Alert not enabled.")
             return
-        self._alert.stop(wait)
+        while self._alert.is_alive():
+            self._alert.stop(wait)
+            time.sleep(0.02)
 
-    def wait(self, occurence_nb: int = 1, timeout: int = None):
+    def wait(self, occurence_nb: int = 1, timeout: int = None, disable_on_completed: bool = False):
+        """Waits for the watched event to occur 'occurence_nb' times.
+
+        Args:
+            occurence_nb (int, optional): Number of occurence to wait for. Defaults to 1.
+            timeout (int, optional): Number of seconds to wait before timing out while waiting for an event. Defaults to None.
+
+        Returns:
+            self [EventSubscriber]: Class current instance.
+        """
         for _ in range(occurence_nb):
             self._alert.wait(timeout)
+        if disable_on_completed == True:
+            self.disable(False)
+        return self
+
+    def is_alive(self):
+        return self._alert.is_alive()
 
     # PRIVATE METHODS #
 
-    def __setup_event_callback(self, _delay: int, _repeat: bool):
+    def __setup_event_callback(self, _delay: float, _repeat: bool):
         # Get event (PropertyCheckingFactory) from event name
         self.event_watched = self.__get_w3_event_from_name(self._event_name)
         # Get event generator
