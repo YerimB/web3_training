@@ -120,6 +120,10 @@ class EventSubscriber:
             return
         self._alert.stop(wait)
 
+    def wait(self, occurence_nb: int = 1, timeout: int = None):
+        for _ in range(occurence_nb):
+            self._alert.wait(timeout)
+
     # PRIVATE METHODS #
 
     def __setup_event_callback(self, _delay: int, _repeat: bool):
