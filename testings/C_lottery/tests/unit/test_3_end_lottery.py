@@ -1,3 +1,7 @@
+import pytest
+
+from brownie import exceptions
+
 from scripts.deploy import deploy_lottery
 from scripts.useful.tools import (
     get_account,
@@ -26,6 +30,33 @@ def test_owner_can_end_lottery():
     # Assert
     # --- If passes : Means lottery ending process is in progess
     assert contract.m_LotteryState() == LotteryState.CALCULATING_WINNER.value
+
+
+def test_not_owner_cannot_end_lottery():
+    only_local()
+
+    # Init
+    owner = get_account(0)
+    bad_actor = get_account(1)
+    contract = deploy_lottery(account=owner)
+
+    # Core
+    # --- Opens lottery
+    wait_for_tx_confs(contract.startLottery({"from": owner}).txid)
+    # --- Enter lottery
+    wait_for_tx_confs(
+        contract.enter({"from": owner, "value": contract.getEntranceFee()}).txid
+    )
+    fund_with_link(contract, from_account=owner)
+
+    # Assert
+    with pytest.raises(exceptions.VirtualMachineError):
+        wait_for_tx_confs(contract.endLottery({"from": bad_actor}).txid)
+    # --- Check lottery state
+    assert contract.m_LotteryState() not in [
+        LotteryState.CLOSED.value,
+        LotteryState.CALCULATING_WINNER.value,
+    ], "Invalid lottery state"
 
 
 def test_can_pick_winner_correctly():

@@ -11,8 +11,7 @@ contract Lottery is VRFConsumerBase, Ownable {
     enum LotteryState {
         CLOSED,
         OPENED,
-        CALCULATING_WINNER,
-        ENTRIES_CLOSED
+        CALCULATING_WINNER
     }
 
     // VARIABLES
@@ -23,10 +22,10 @@ contract Lottery is VRFConsumerBase, Ownable {
     uint256 public m_PreviousRandomness;
     bool public m_GambleDone; // For testing purpose only
 
-    LotteryState public m_LotteryState;
     address payable[] public m_Players;
     address payable public m_Winner;
     uint256 public m_UsdEntryFee; // Precision => 18
+    LotteryState public m_LotteryState;
 
     mapping(address => bool) public m_PlayerToHasEntered;
     mapping(address => uint256) public m_PlayerToUnclaimedMoney;
@@ -35,6 +34,7 @@ contract Lottery is VRFConsumerBase, Ownable {
     event RandomnessRequested(bytes32 requestId);
     event RandomnessReceived(bytes32 requestId, uint256 randomness);
     event LotteryStarted(uint256 usdEntryFee);
+    event LotteryWinnerDetermined(address winner);
     event LotteryReset();
 
     // METHODS
@@ -70,11 +70,6 @@ contract Lottery is VRFConsumerBase, Ownable {
 
     /* START */
 
-    /**
-    This function is called just before the startLottery function
-     */
-    function _preStartLottery() internal virtual {}
-
     function startLottery() public virtual onlyOwner {
         // Checks if lottery is not currently opened.
         require(
@@ -84,23 +79,12 @@ contract Lottery is VRFConsumerBase, Ownable {
         // Set lottery state to OPENED.
         m_LotteryState = LotteryState.OPENED;
         m_GambleDone = false;
-        _postStartLottery();
-    }
-
-    /**
-    This function is called right after the startLottery function
-     */
-    function _postStartLottery() internal virtual {
         emit LotteryStarted(m_UsdEntryFee);
     }
 
     /* ENTER */
 
-    function _preEnter() internal virtual {}
-
     function enter() public payable {
-        _preEnter();
-
         // Check if the lottery is opened.
         require(
             m_LotteryState == LotteryState.OPENED,
@@ -130,22 +114,11 @@ contract Lottery is VRFConsumerBase, Ownable {
             bool success = _send(leftovers, msg.sender);
             if (!success) m_PlayerToUnclaimedMoney[msg.sender] += leftovers;
         }
-
-        _postEnter();
     }
-
-    function _postEnter() internal virtual {}
 
     /* END LOTTERY */
 
-    /**
-     * This function is called before endLottery()
-     */
-    function _preEndLottery() internal virtual {}
-
     function endLottery() public onlyOwner {
-        _preEndLottery();
-
         // Change lottery state to CALCULATING_WINNER
         m_LotteryState = LotteryState.CALCULATING_WINNER;
 
@@ -172,14 +145,7 @@ contract Lottery is VRFConsumerBase, Ownable {
          * in the callback function for requestRandomness().
          * @see fulfillRandomness() function.
          */
-
-        _postEndLottery();
     }
-
-    /**
-     * This function is called after endLottery()
-     */
-    function _postEndLottery() internal virtual {}
 
     /**
      * This function can be called to be sent unclaimed funds if there is.
@@ -214,6 +180,7 @@ contract Lottery is VRFConsumerBase, Ownable {
 
         // Sends funds to winner
         _send(address(this).balance, m_Winner);
+        emit LotteryWinnerDetermined(m_Winner);
         _resetLottery();
     }
 
@@ -236,9 +203,7 @@ contract Lottery is VRFConsumerBase, Ownable {
         );
         emit RandomnessReceived(_requestId, _randomness);
         m_GambleDone = true;
-
         _sendPrizeToWinner(_randomness % m_Players.length);
-
         // Update previously generated random number.
         m_PreviousRandomness = _randomness;
     }

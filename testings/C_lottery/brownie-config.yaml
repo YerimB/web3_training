@@ -11,6 +11,9 @@ compiler:
       - '@chainlink=smartcontractkit/chainlink-brownie-contracts@0.3.0'
       - '@openzeppelin=OpenZeppelin/openzeppelin-contracts@4.4.1'
 
+accounts:
+  from_key: ${PRIVATE_KEY}
+
 networks:
   default: development
   # Development networks
@@ -30,6 +33,13 @@ networks:
     link_token: '0x01BE23585060835E02B77ef475b0Cc51aA1e0709'
     link_fee: 100000000000000000
     keyhash: '0x2ed0feb3e7fd2022120aa84fab1945545a9f2ffc9076fd6156fa96eaff4c1311'
+  kovan:
+    # verify: True
+    eth_usd_price_feed: '0x9326BFA02ADD2366b30bacB125260Af641031331'
+    vrf_coordinator: '0xdD3782915140c8f3b190B5D67eAc6dc5760C46E9'
+    link_token: '0xa36085F69e2889c224210F603D836748e7dC0088'
+    link_fee: 100000000000000000
+    keyhash: '0x6c3699283bda56ad74f6b855546325b68d482e983852a7a82979cc4807b641f4'
   # Mainnet forks
   mainnet-fork-dev:
     verify: False

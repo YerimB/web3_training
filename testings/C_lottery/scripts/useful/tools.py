@@ -29,7 +29,7 @@ def get_account(index: int | None = None, id: str | None = None):
     ):
         return accounts[0]
     # else
-    return accounts.load("dev_mask_1")
+    return accounts.add(config["accounts"]["from_key"])
 
 
 CONTRACT_TO_MOCK = {

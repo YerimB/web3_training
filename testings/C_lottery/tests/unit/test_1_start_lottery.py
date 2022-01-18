@@ -1,12 +1,10 @@
 import pytest
+
 from brownie import exceptions
 from brownie.network.transaction import TransactionReceipt
 
 from scripts.deploy import deploy_lottery
-from scripts.useful.tools import (
-    get_account,
-    wait_for_tx_confs
-)
+from scripts.useful.tools import get_account, wait_for_tx_confs
 from tests.tools import only_local, LotteryState
 
 

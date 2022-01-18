@@ -10,6 +10,7 @@ class LotteryState(Enum):
     CLOSED = 0
     OPENED = 1
     CALCULATING_WINNER = 2
+    ENTRIES_CLOSED = 3
 
 
 def only_local():

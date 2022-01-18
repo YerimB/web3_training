@@ -58,7 +58,6 @@ def test_cannot_enter_lottery_with_lower_fee():
         wait_for_tx_confs(
             contract.enter({"from": bad_actor, "value": entrance_fee - 1}).txid
         )
-        assert False
 
 
 def test_can_start_and_enter_lottery():

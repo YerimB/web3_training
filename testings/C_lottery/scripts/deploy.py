@@ -6,7 +6,11 @@ from brownie.network.contract import Contract, ContractContainer
 from scripts.useful.tools import get_account, get_contract, wait_for_tx_confs
 
 
-def deploy_lottery(account: Account = None, entrance_fee: int = 50, lottery_type: ContractContainer = Lottery) -> Contract:
+def deploy_lottery(
+    account: Account = None,
+    entrance_fee: int = 50,
+    lottery_type: ContractContainer = Lottery,
+) -> Contract:
     current_network = network.show_active()
     current_network_config = config["networks"][current_network]
 
