@@ -5,23 +5,34 @@ dotenv: .env
 dependencies:
   # - <organisation/repo>@<version>
   - OpenZeppelin/openzeppelin-contracts@4.4.2
+  - smartcontractkit/chainlink-brownie-contracts@0.3.0
 compiler:
   solc:
     remappings:
       - '@openzeppelin=OpenZeppelin/openzeppelin-contracts@4.4.2'
+      - '@chainlink=smartcontractkit/chainlink-brownie-contracts@0.3.0'
+
+accounts:
+  from_key: ${PRIVATE_KEY}
 
 # Networks variables
 networks:
-  # default: mainnet-fork-dev
+  default: development
+  # Development
+  development:
+    link_fee: 100000000000000000
+    keyhash: '0x6c3699283bda56ad74f6b855546325b68d482e983852a7a82979cc4807b641f4'
   # Test networks
   kovan:
-    weth_token: '0xd0a1e359811322d97991e03f863a0c30c2cf029c'
-    dai_token: '0xFf795577d9AC8bD7D90Ee22b6C1703490b6512FD'
-    aave_lp_address_provider : '0x88757f2f99175387aB4C6a4b3067c77A695b0349'
-    dai_eth_price_feed: '0x22B58f1EbEDfCA50feF632bD73368b2FdA96D541'
-  # Forked mainnets
-  mainnet-fork-dev:
-    weth_token: '0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2'
-    dai_token: '0x6b175474e89094c44da98b954eedeac495271d0f'
-    aave_lp_address_provider : '0xB53C1a33016B2DC2fF3653530bfF1848a515c8c5'
-    dai_eth_price_feed: '0x773616E4d11A78F511299002da57A0a94577F1f4'
+    verify: True
+    vrf_coordinator: '0xdD3782915140c8f3b190B5D67eAc6dc5760C46E9'
+    link_token: '0xa36085F69e2889c224210F603D836748e7dC0088'
+    link_fee: 100000000000000000
+    keyhash: '0x6c3699283bda56ad74f6b855546325b68d482e983852a7a82979cc4807b641f4'
+  rinkeby:
+    verify: True
+    eth_usd_price_feed: '0x8A753747A1Fa494EC906cE90E9f37563A8AF630e'
+    vrf_coordinator: '0xb3dCcb4Cf7a26f6cf6B120Cf5A73875B7BBc655B'
+    link_token: '0x01BE23585060835E02B77ef475b0Cc51aA1e0709'
+    link_fee: 100000000000000000
+    keyhash: '0x2ed0feb3e7fd2022120aa84fab1945545a9f2ffc9076fd6156fa96eaff4c1311'

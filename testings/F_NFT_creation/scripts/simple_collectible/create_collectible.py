@@ -1,13 +1,11 @@
 from brownie.network.contract import Contract
 from brownie.network.account import Account
-from brownie.network.transaction import TransactionReceipt
 
-from scripts.deploy_collectible import deploy_collectible
-from scripts.helpful.tools import get_account, wait_for_tx_confs
+from scripts.simple_collectible.deploy_collectible import deploy_collectible
+from scripts.helpful.tools import get_account, wait_for_tx_confs, OPENSEA_URL
 
 SAMPLE_TOKEN_URI = "https://ipfs.io/ipfs/QmYjNhogVukEobwJDYg9PiGeX9cANmXudVdhvZJTLApR9Y?filename=frolian.json"
 # SAMPLE_TOKEN_URI = "https://ipfs.io/ipfs/QmXHH6mtYSVBjQ5gCTrMuh5XBL5M74gLTiGYUT39Dz7rwo?filename=mr_patate_marchais.json"
-OPENSEA_URL = "https://testnets.opensea.io/assets/{}/{}"
 
 
 def create_collectible(simple_collectible: Contract, account: Account):
@@ -22,12 +20,14 @@ def create_collectible(simple_collectible: Contract, account: Account):
         int: ID of the generated token
         OrderedDict: Transfer event changing ownership of the collectible to 'account'
     """
-    print("Creating NTF...")
+    print("Creating collectible...")
     tx = simple_collectible.createCollectible(SAMPLE_TOKEN_URI, {"from": account})
     tx = wait_for_tx_confs(tx.txid)
-    transfer_event = tx.events['Transfer'][-1]
-    token_id = transfer_event['tokenId']
-    print(f"NFT created ! Viewable at {OPENSEA_URL.format(simple_collectible.address, token_id)}")
+    transfer_event = tx.events["Transfer"][-1]
+    token_id = transfer_event["tokenId"]
+    print(
+        f"NFT created ! Viewable at {OPENSEA_URL.format(simple_collectible.address, token_id)}"
+    )
 
     return token_id, transfer_event
 

@@ -52,10 +52,10 @@ contract Lottery is VRFConsumerBase, Ownable {
         m_EthUsdPriceFeed = AggregatorV3Interface(_priceFeedAddress);
         // Set lottery default state to CLOSED.
         m_LotteryState = LotteryState.CLOSED;
+        m_GambleDone = false;
         // Set VRFConsumerBase variables
         m_Fee = _fee;
         m_Keyhash = _keyhash;
-        m_GambleDone = false;
     }
 
     // Returns the lottery entrance fee in WEI
