@@ -34,5 +34,5 @@ def create_collectible(simple_collectible: Contract, account: Account):
 
 def main():
     account = get_account()
-    simple_collictible = deploy_collectible(account)
-    create_collectible(simple_collictible, account)
+    simple_collectible = deploy_collectible(account)
+    create_collectible(simple_collectible, account)

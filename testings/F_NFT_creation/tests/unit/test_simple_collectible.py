@@ -1,8 +1,8 @@
 from tests.tools import only_local
 
 from scripts.helpful import tools
-from scripts.deploy_collectible import deploy_collectible
-from scripts.create_collectible import create_collectible
+from scripts.simple_collectible.deploy_collectible import deploy_collectible
+from scripts.simple_collectible.create_collectible import create_collectible
 
 
 def test_can_create_simple_collectible():
@@ -22,5 +22,5 @@ def test_can_create_simple_collectible():
 
     # Assert
     assert generated_collectible_owner_address == account.address
-    assert transfer_event['to'] == account.address
+    assert transfer_event["to"] == account.address
     assert account_collectible_balance == og_account_collectible_balance + 1

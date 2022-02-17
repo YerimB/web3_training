@@ -47,21 +47,16 @@ contract AdvancedCollectible is ERC721URIStorage, VRFConsumerBase {
         address _vrfCoordinator,
         address _linkToken,
         uint256 _fee,
-        bytes32 _keyhash
+        bytes32 _keyhash,
+        string[3] memory _uris
     ) ERC721(_name, _symbol) VRFConsumerBase(_vrfCoordinator, _linkToken) {
         // VRFConsumerBase variables
         m_Fee = _fee;
         m_Keyhash = _keyhash;
         // Init type to collectible uri mapping
-        m_TypeToURI[
-            CollectibleType.FROLIAN
-        ] = "https://ipfs.io/ipfs/QmYjNhogVukEobwJDYg9PiGeX9cANmXudVdhvZJTLApR9Y?filename=frolian.json";
-        m_TypeToURI[
-            CollectibleType.POTATO
-        ] = "https://ipfs.io/ipfs/QmXHH6mtYSVBjQ5gCTrMuh5XBL5M74gLTiGYUT39Dz7rwo?filename=mr_patate_marchais.json";
-        m_TypeToURI[
-            CollectibleType.ALDERIATE
-        ] = "https://ipfs.io/ipfs/QmWbNnhSAhtKcGRjeRKJgt2pEJySjgZVmrQe65x73TXZu3?filename=alde_defense.json";
+        m_TypeToURI[CollectibleType.FROLIAN] = _uris[0];
+        m_TypeToURI[CollectibleType.POTATO] = _uris[1];
+        m_TypeToURI[CollectibleType.ALDERIATE] = _uris[2];
     }
 
     // METHODS

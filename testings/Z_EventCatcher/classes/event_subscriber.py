@@ -3,12 +3,14 @@
 import time
 
 # Typing
-from typing import Callable
+from typing import Callable, Type
 
 # Web3.py & Brownie
 # --- Web3.py
 from web3._utils import datatypes as w3_datatypes
-from web3.contract import Contract as w3_Contract
+from web3._utils import filters as w3_filters
+from web3.datastructures import AttributeDict
+from web3.contract import Contract as w3_Contract, ContractEvent
 
 # --- Brownie
 from brownie import web3 as w3
@@ -23,37 +25,40 @@ def _brownie_contract_to_web3_contract(brownie_contract: Contract) -> w3_Contrac
     return w3_contract
 
 
-def _get_latests_events(event, **kwargs):
+def _get_latests_events(event: Type["ContractEvent"], **kwargs):
     """Returns a generator, which, when called, returns a list containing all
     events that occured between the last checked block (or the start block on
     the first call) and the last mined block.
 
     Args:
-        event ([type]): [description]
+        event (ContractEvent): The contract 'topic' from which to catch new events
 
     Yields:
-        events: List containing all events since last call.
+        events: List containing all event logs since last call.
     """
+    # Set starting blocks.
     start_block = kwargs.get("start_block", w3.eth.block_number - 100)
     to_block = w3.eth.block_number
 
     while True:
-        event_filter = event.createFilter(fromBlock=start_block, toBlock=to_block)
+        event_filter: w3_filters.LogFilter = event.createFilter(
+            fromBlock=start_block, toBlock=to_block
+        )
         events = event_filter.get_all_entries()
         yield events
 
-        # Shifts the blocks to look at.
+        # On new call, shifts the blocks to look at.
         start_block = to_block
         to_block = w3.eth.block_number
 
 
-def _get_next_event(event_to_watch, **kwargs):
+def _get_next_event(event_to_watch: Type["ContractEvent"], **kwargs):
     # Get event catcher generator
     _gen_latests_events = _get_latests_events(event_to_watch, **kwargs)
     while True:
-        # Get latests events since last block checked
+        # Get latests events as a list since last block checked
         events_list = next(_gen_latests_events)
-        # If no event detected return None
+        # If no event is detected return None
         if events_list.__len__() == 0:
             yield None
         # Submit latest events one by one.
@@ -63,13 +68,13 @@ def _get_next_event(event_to_watch, **kwargs):
 
 class EventSubscriber:
     # Member variables
-    _brownie_contract = None  # brownie.network.contract.Contract
-    _w3_contract = None  # web3.contract.Contract
-    _alert = None  # brownie.network.alert.Alert
-    _event_name = None  # str
-    _callback = None  # typing.Callable
+    _brownie_contract: Contract = None
+    _w3_contract: w3_Contract = None
+    _alert: alert.Alert = None
+    _event_name: str = None
+    _callback: Callable[[AttributeDict, AttributeDict], None] = None
     _gen_event_getter = None  # generator
-    _from_block = 0  # int
+    _from_block: int = 0
 
     def __init__(
         self, contract: Contract, event_name: str, callback: Callable, **kwargs
@@ -128,7 +133,12 @@ class EventSubscriber:
             self._alert.stop(wait)
             time.sleep(0.02)
 
-    def wait(self, occurence_nb: int = 1, timeout: int = None, disable_on_completed: bool = False):
+    def wait(
+        self,
+        occurence_nb: int = 1,
+        timeout: int = None,
+        disable_on_completed: bool = False,
+    ):
         """Waits for the watched event to occur 'occurence_nb' times.
 
         Args:
@@ -165,16 +175,10 @@ class EventSubscriber:
             repeat=_repeat,
         )
 
-    def __get_w3_event_from_name(self, event_name: str):
-        # Get event with name matching 'event_name' parameter
-        property_checking_factory = self._w3_contract.events.__dict__.get(
-            event_name, None
-        )
-        # Check if event was found
-        if property_checking_factory == None:
-            raise Exception(f"Could not retrieve event with name : {event_name}")
-        # Returns the event
-        return property_checking_factory
+    def __get_w3_event_from_name(self, event_name: str) -> Type["ContractEvent"]:
+        # Get ContractEvent attribute with a name
+        # matching the 'event_name' parameter
+        return self._w3_contract.events[event_name]
 
     # PROPERTIES #
 

@@ -6,14 +6,20 @@ from scripts.helpful import tools
 
 
 def deploy_collectible(account: Account, name: str, symbol: str) -> Contract:
+    fURI = "https://ipfs.io/ipfs/{}"
     current_network_config = config["networks"][network.show_active()]
-    collectible = AdvancedCollectible.deploy(
+    collectible: Contract = AdvancedCollectible.deploy(
         name,
         symbol,
         tools.get_contract("vrf_coordinator"),
         tools.get_contract("link_token"),
         current_network_config["link_fee"],
         current_network_config["keyhash"],
+        [
+            fURI.format("QmYjNhogVukEobwJDYg9PiGeX9cANmXudVdhvZJTLApR9Y?filename=frolian.json"),
+            fURI.format("QmXHH6mtYSVBjQ5gCTrMuh5XBL5M74gLTiGYUT39Dz7rwo?filename=mr_patate_marchais.json"),
+            fURI.format("QmWbNnhSAhtKcGRjeRKJgt2pEJySjgZVmrQe65x73TXZu3?filename=alde_defense.json"),
+        ],
         {"from": account},
         # publish_source=current_network_config.get("verify", False)
     )

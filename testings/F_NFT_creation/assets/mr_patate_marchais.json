@@ -1,18 +1,18 @@
 {
     "name": "Mr. Patate Marchais",
-    "description": "Bogoss Man ready to lift madame patate",
+    "description": "Bogoss Man ready to lift madame patate.",
     "image": "https://ipfs.io/ipfs/QmVPLLkHCCaa32CK8oansKyNdXZdTATkF6uFwLGajmAHtS?filename=mr_patate.png",
     "attributes": [
         {
-            "trait_type": "resistance",
+            "trait_type": "attr1",
             "value": 87
         },
         {
-            "trait_type": "range",
+            "trait_type": "attr2",
             "value": 65
         },
         {
-            "trait_type": "hearing",
+            "trait_type": "attr3",
             "value": 100
         }
     ]

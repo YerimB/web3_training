@@ -3,12 +3,7 @@
 pragma solidity ^0.8.0;
 
 contract EventEmitter {
-    event ContractCreated();
-    event CallEvent(address sender);
-
-    constructor() {
-        emit ContractCreated();
-    }
+    event CallEvent(address indexed _from);
 
     function triggerEvent() public {
         emit CallEvent(msg.sender);

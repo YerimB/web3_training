@@ -1,18 +1,18 @@
 {
     "name": "Alde Défense",
-    "description": "En train de chill à La Défense perso",
+    "description": "En train de chill à La Défense perso.",
     "image": "https://ipfs.io/ipfs/QmNUShXkuQdWB2EN5i8AEuAvFpuifVgtr1RF7aTEgjkVHP?filename=alde_defense.jpg",
     "attributes": [
         {
-            "trait_type": "PROZIS ALDE10 #AD",
+            "trait_type": "attr1",
             "value": 10
         },
         {
-            "trait_type": "Chicha Kaloud",
+            "trait_type": "attr2",
             "value": 96
         },
         {
-            "trait_type": "Petit chaton",
+            "trait_type": "attr3",
             "value": 3090
         }
     ]

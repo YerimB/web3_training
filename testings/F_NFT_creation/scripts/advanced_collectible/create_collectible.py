@@ -39,7 +39,7 @@ def create_collectible(collectible: Contract, account: Account):
         token_id = event_data["args"].get("tokenId")
 
         print("Collectible minted !")
-        print(f"--- See it at {OPENSEA_URL.format(account.address, token_id)}")
+        print(f"--- See it at {OPENSEA_URL.format(collectible.address, token_id)}")
         cb2_triggered = True
 
     colRequested_sub = EventSubscriber(
